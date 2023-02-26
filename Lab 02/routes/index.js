@@ -1,16 +1,12 @@
-const redis = require("redis");
-const client = redis.createClient();
 const { usersData } = require("../data");
 const {
 	sendErrResp,
 	isValidUserObj,
 	isValidUserLoginObj,
 	badRequestErr,
-} = require("../helpers");
+} = require("../utils");
+const { getMostPopularRecipes } = require("../utils/redis");
 const recipeRoutes = require("./recipes");
-
-client.connect().then(() => {});
-client.on("error", (err) => console.log("Redis Client Error", err));
 
 const constructorMethod = (app) => {
 	app.use("/recipes", recipeRoutes);
@@ -58,7 +54,6 @@ const constructorMethod = (app) => {
 				_id: user._id.toString(),
 				username: user.username,
 			};
-			await client.set("20012198_session", JSON.stringify(req.session));
 			res.status(201).json({ user });
 		} catch (e) {
 			sendErrResp(res, e);
@@ -77,14 +72,7 @@ const constructorMethod = (app) => {
 
 	app.get("/mostaccessed", async (req, res) => {
 		try {
-			const recipeIds = await client.zRange("20012198_popularRecipes", 0, 9, {
-				REV: true,
-			});
-			const recipes = await Promise.all(
-				recipeIds.map(async (id) =>
-					client.get(`20012198_${id}`).then(JSON.parse)
-				)
-			);
+			const recipes = await getMostPopularRecipes();
 			res.json({ recipes });
 		} catch (e) {
 			sendErrResp(res, e);

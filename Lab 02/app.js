@@ -1,9 +1,14 @@
 const express = require("express");
 const configRoutes = require("./routes");
 const session = require("express-session");
-const redisMiddleware = require("./middlewares/redis");
+const redis = require("redis");
+const client = redis.createClient({ legacyMode: true });
+const RedisStore = require("connect-redis")(session);
 
 const SECRET = "thismyreallysecuresecret";
+
+client.connect().then(() => {});
+client.on("error", (err) => console.log("Redis Client Error", err));
 
 const app = express();
 app.use(express.json());
@@ -27,6 +32,7 @@ const loggingMiddleware = async (req, res, next) => {
 app.use(
 	session({
 		name: "AuthCookie",
+		store: new RedisStore({ client }),
 		secret: SECRET,
 		resave: false,
 		saveUninitialized: true,
@@ -34,7 +40,6 @@ app.use(
 );
 
 app.use("/", loggingMiddleware);
-app.use("/", redisMiddleware);
 
 configRoutes(app);
 

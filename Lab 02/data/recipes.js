@@ -11,7 +11,7 @@ const {
 	isValidUpdateRecipeObj,
 	internalServerErr,
 	badRequestErr,
-} = require("../helpers");
+} = require("../utils");
 
 const getAllRecipes = async (pageStr) => {
 	const itemsPerPage = 50;

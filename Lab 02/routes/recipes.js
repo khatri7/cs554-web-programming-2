@@ -1,6 +1,4 @@
 const express = require("express");
-const redis = require("redis");
-const client = redis.createClient();
 const { recipesData } = require("../data");
 const { createRecipe } = require("../data/recipes");
 const {
@@ -11,25 +9,25 @@ const {
 	isValidCurrUser,
 	isValidPage,
 	isValidUpdateRecipeObj,
-} = require("../helpers");
+} = require("../utils");
 const authenticate = require("../middlewares/auth");
-
-client.connect().then(() => {});
-client.on("error", (err) => console.log("Redis Client Error", err));
+const {
+	cacheRecipe,
+	updateCacheRecipe,
+	cacheRecipePage,
+} = require("../utils/redis");
+const { redisAllRecipes, redisSingleRecipe } = require("../middlewares/redis");
 
 const router = express.Router();
 
 router
 	.route("/")
-	.get(async (req, res) => {
+	.get(redisAllRecipes, async (req, res) => {
 		try {
 			let { page } = req.query;
 			page = isValidPage(page);
 			const recipes = await recipesData.getAllRecipes(page);
-			await client.set(
-				`20012198_allRecipes_${page}`,
-				JSON.stringify({ recipes })
-			);
+			await cacheRecipePage(recipes, page);
 			res.json({
 				recipes,
 			});
@@ -44,6 +42,7 @@ router
 				recipeObj,
 				isValidCurrUser(req.session.user)
 			);
+			await updateCacheRecipe(recipe);
 			res.status(201).json({ recipe });
 		} catch (e) {
 			sendErrResp(res, e);
@@ -52,20 +51,11 @@ router
 
 router
 	.route("/:recipeId")
-	.get(async (req, res) => {
+	.get(redisSingleRecipe, async (req, res) => {
 		try {
 			const _id = isValidObjectId(req.params.recipeId);
 			const recipe = await recipesData.getRecipeById(_id.toString());
-			const redisResult = await client.set(
-				`20012198_${recipe._id.toString()}`,
-				JSON.stringify({ recipe })
-			);
-			console.log(redisResult);
-			await client.zAdd("20012198_popularRecipes", {
-				score: 1,
-				value: recipe._id.toString(),
-			});
-			console.log("sending response from here");
+			await cacheRecipe(recipe);
 			res.json({ recipe });
 		} catch (e) {
 			sendErrResp(res, e);
@@ -81,6 +71,7 @@ router
 				updatedRecipeObj,
 				isValidCurrUser(req.session.user)
 			);
+			await updateCacheRecipe(recipe);
 			res.json({ recipe });
 		} catch (e) {
 			sendErrResp(res, e);
@@ -98,8 +89,10 @@ router.route("/:recipeId/comments").post(authenticate, async (req, res) => {
 			comment,
 			isValidCurrUser(req.session.user)
 		);
+		await updateCacheRecipe(recipe);
 		res.status(201).json({ recipe });
 	} catch (e) {
+		console.log(e);
 		sendErrResp(res, e);
 	}
 });
@@ -119,6 +112,7 @@ router.route("/:recipeId/:commentId").delete(authenticate, async (req, res) => {
 			commentId.toString(),
 			currUser
 		);
+		await updateCacheRecipe(recipe);
 		res.json({ recipe });
 	} catch (e) {
 		sendErrResp(res, e);
@@ -134,6 +128,7 @@ router.route("/:recipeId/likes").post(authenticate, async (req, res) => {
 			recipeId.toString(),
 			currUser
 		);
+		await updateCacheRecipe(recipe);
 		res.status(201).json({ recipe });
 	} catch (e) {
 		sendErrResp(res, e);

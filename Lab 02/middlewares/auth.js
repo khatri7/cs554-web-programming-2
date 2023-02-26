@@ -3,7 +3,7 @@ const {
 	sendErrResp,
 	unauthorizedErrorObj,
 	badRequestErr,
-} = require("../helpers");
+} = require("../utils");
 
 const authenticate = async (req, res, next) => {
 	try {

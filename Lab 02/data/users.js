@@ -9,7 +9,7 @@ const {
 	notFoundErr,
 	badRequestErr,
 	internalServerErr,
-} = require("../helpers");
+} = require("../utils");
 
 const getUserByUserId = async (userId) => {
 	const _id = isValidObjectId(userId);
