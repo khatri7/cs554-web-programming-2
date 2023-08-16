@@ -1,0 +1,52 @@
+html,
+body {
+	margin: 0;
+	padding: 0;
+}
+
+.notFound__container {
+	width: 100%;
+	min-height: calc(100vh - 200px);
+	overflow: hidden;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	text-align: center;
+}
+
+.notFound__content__header {
+	font-size: 3rem;
+	margin: 0;
+}
+
+/* have to use important to overwrite mui styles */
+
+.notFound__content_text {
+	margin: 1rem 0 !important;
+}
+
+.notFound__content__btn {
+	border: 1px solid #1976d2 !important;
+}
+
+.not-found__spiderman {
+	position: absolute;
+	top: -500px;
+	left: 20%;
+	transform: translateX(-50%);
+}
+
+@keyframes slideIn {
+	from {
+		top: -500px;
+	}
+	to {
+		top: -50px;
+	}
+}
+
+.not-found__spiderman {
+	animation-name: slideIn;
+	animation-duration: 3s;
+	animation-fill-mode: forwards;
+}

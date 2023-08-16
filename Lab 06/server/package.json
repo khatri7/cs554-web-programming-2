@@ -1,0 +1,23 @@
+{
+	"name": "marvel-server",
+	"version": "1.0.0",
+	"description": "",
+	"main": "index.js",
+	"type": "module",
+	"scripts": {
+		"start": "node --experimental-specifier-resolution=node index.js",
+		"dev": "node --watch --experimental-specifier-resolution=node index.js",
+		"test": "echo \"Error: no test specified\" && exit 1"
+	},
+	"author": "Abhishek Khatri",
+	"license": "MIT",
+	"dependencies": {
+		"@apollo/server": "^4.6.0",
+		"blueimp-md5": "^2.19.0",
+		"dotenv": "^16.0.3",
+		"geolib": "^3.3.3",
+		"graphql": "^16.6.0",
+		"redis": "^4.6.5",
+		"uuid": "^9.0.0"
+	}
+}
